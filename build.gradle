@@ -1,0 +1,84 @@
+plugins {
+    id 'org.springframework.boot' version '2.2.6.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'com.benjaminsproule.swagger' version "1.0.8"
+    id 'org.hidetake.swagger.generator' version '2.18.2'
+}
+
+group = 'ru.fso13'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Swagger
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-bean-validators', version: '2.9.2'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-openfeign-core', version: '3.0.5'
+
+
+    // Lombok
+    implementation group: 'org.projectlombok', name: 'lombok'
+    testImplementation group: 'org.projectlombok', name: 'lombok'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok'
+
+    implementation group: 'com.google.guava', name: 'guava'
+    implementation group: 'javax.validation', name: 'validation-api'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+swagger {
+    apiSource {
+        springmvc = true
+        locations = ['ru.fso13.testswaggergeneration']
+        schemes = ['http', 'https']
+        host = 'localhost:8080'
+        basePath = '/'
+        info {
+            title = 'tests wagger generation api'
+            version = 'v1'
+            description = 'This is a sample.'
+            termsOfService = 'http://www.example.com/termsOfService'
+            contact {
+                email = '13laughingman13@gmail.com'
+                name = 'Laughingman'
+                url = 'https://fso13.github.io/fso13/'
+            }
+            license {
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.html'
+                name = 'Apache 2.0'
+            }
+        }
+        swaggerDirectory = "${project.buildDir}/swagger-ui"
+//        securityDefinition {
+//            json = 'securityDefinition.json'
+//        }
+    }
+}
+tasks.build.dependsOn(generateSwaggerDocumentation)
+
+dependencies {
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.29'
+}
+swaggerSources {
+    petstore {
+        inputFile = file("${project.buildDir}/swagger-ui/swagger.json")
+        code {
+            language = 'spring'
+            library = 'spring-cloud'
+            dependsOn generateSwaggerDocumentation
+        }
+    }
+}
+tasks.build.dependsOn(generateSwaggerCode)
